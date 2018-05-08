@@ -225,11 +225,14 @@ for (i in list.files('Plot', full.names=T)){
     print(paste0('Plotting in ', i))
     filesdir <- i
     paste0(filesdir, '*vep')
+    genes <- unique(read.table(paste0(filesdir, "/Broccoli.vep"), stringsAsFactors=FALSE)$V4)
+
     my_vep <- Sys.glob(paste0(filesdir, "/*vep"))
     vepObject <- VEP(my_vep)
 
     png(paste0(filesdir, 'test.png'), height=480*3, width=480*3)
-    drawPlot(Waterfall(vepObject,recurrence = 0.4, mutationHierarchy=mymutations ))
+    drawPlot(Waterfall(vepObject,recurrence = 0.0, mutationHierarchy=mymutations, geneOrder=genes))
+
     dev.off()
   }
 }
