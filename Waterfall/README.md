@@ -1,7 +1,7 @@
 
-This folder shows how I made the Waterfall plots using VEP, vcftools, and GeneVisR.
+This folder shows how I made the Waterfall plots using VEP, vcftools, and GenVisR.
 
-GeenVisR needs one VEP output file per individual.
+GenVisR needs one VEP output file per individual.
 
 Input files are hosted at http://www.brassicagenome.net/databases.php
 
@@ -21,6 +21,7 @@ False   Bo2g079150.1    TN      core
 False   Bo2g079130.1    TN      core
 False   Bo2g131540.1    TN      core
 ````
+
 Where the first line is the name of the QTL (in terms of markers) and the other lines shows which RGA candidates are within that QTL, whether they are in another QTL (False/True), their class, and whether they're variable or core.
 
 A simple script to make one folder for each QTL:
@@ -105,7 +106,7 @@ Now to run VEP, it's important that at the time of this writing, if you use a VE
    perl INSTALL.pl
 ```
 
-and to run VEP:
+and to run VEP (important to run `tabix -p gff` and bgzip on all fasta and gff3 files first)
 
 ```bash
 for l in */*vcf_*snps_only.vcf; do
@@ -195,7 +196,7 @@ for f in glob('*/*.vep'):
 
 and after checking move the 'wih_pav' files over:
 
-   for l in */*_wih_pav.vep; do mv $l ${l%%_wih_pav.vep}; done
+    for l in */*_wih_pav.vep; do mv $l ${l%%_wih_pav.vep}; done
 
 
 AND FINALLY we can plot:
@@ -203,21 +204,22 @@ AND FINALLY we can plot:
 ```R
 # set a seed
 set.seed(426)
-library(RColorBrewer)
-mypal <- c('black', brewer.pal(11, 'Paired'))
-tol21rainbow= c("#AA4488", "#CC99BB", "#4477AA", "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#117744", "#44AA77", "#88CCAA", "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", "#DD7788")
+# Testing different color schemes
+# library(RColorBrewer)
+#mypal <- c('black', brewer.pal(11, 'Paired'))
+rainbow <- c("#AA4488", "#CC99BB", "#4477AA", "#77AADD", "#117777", "#44AAAA", "#77CCCC", "#117744", "#44AA77", "#88CCAA", "#777711", "#AAAA44", "#DDDD77", "#774411", "#AA7744", "#DDAA77", "#771122", "#AA4455", "#DD7788")
 mypal <- c('black', tol21rainbow)
 mypal <- mypal[1:12]
-print(mypal)
 library(data.table)
-mutations <- unique(getMutation(vepObject)$Conse)
-getMutation(vepObject$Consequence)
+# mutations <- unique(getMutation(vepObject)$Conse)
+# manually make mutation order, most severe first (that's why the rev)
 mymutations <- data.table(mutation=rev(c('downstream_gene_variant', 'upstream_gene_variant', 'intron_variant', 'synonymous_variant', 'splice_region_variant',
                  'missense_variant','start_lost','stop_lost','stop_gained','splice_donor_variant',
                  'splice_acceptor_variant', 'gene_lost')), color=mypal)
 
 # load GenVisR into R
 library(GenVisR)
+# The folder Plot has all .vep files
 for (i in list.files('Plot', full.names=T)){
   if(dir.exists(i)) {
     print(paste0('Plotting in ', i))
@@ -227,10 +229,8 @@ for (i in list.files('Plot', full.names=T)){
     vepObject <- VEP(my_vep)
 
     png(paste0(filesdir, 'test.png'), height=480*3, width=480*3)
-
     drawPlot(Waterfall(vepObject,recurrence = 0.4, mutationHierarchy=mymutations ))
     dev.off()
-
   }
 }
 ```
