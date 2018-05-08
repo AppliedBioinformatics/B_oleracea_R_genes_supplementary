@@ -235,3 +235,4 @@ for (i in list.files('Plot', full.names=T)){
 }
 ```
 
+![Waterfall plot for one QTL](SWUC177_BoGMS1032test.png)
